@@ -1,0 +1,11 @@
+{
+  "headersForward": {
+    "ip": "x-real-ip"
+  },
+  "policy": {
+    "allowIfThereInsufficientIP": false
+  },
+  "monitoring": {
+    "registerTraffic": true
+  }
+}
