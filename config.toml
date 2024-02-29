@@ -1,0 +1,38 @@
+version = 1
+name = 'Default Router'
+
+[http]
+host = '0.0.0.0'
+port = 3000
+loggerEnabled = false
+
+[auth]
+admins = [
+    ["root", "root"]
+]
+
+# TCP = http
+# UDP = https
+protocol = "tcp"
+
+[rotuer]
+    [rotue.configurator]
+        [rotue.configurator.masking.response]
+        # pass
+
+        [rotue.configurator.headersForward]
+        ip = "x-real-ip"
+
+[monitoring]
+registerTraffic = true
+useMobileTrackingBaseGroup = true
+
+[databases]
+    [databases.mongodb]
+    ip = "127.0.0.1"
+    port = '3201'
+
+    paths = [
+        ["db/traffic", "traffic"],
+        ["db/traffic/routers", "routers"],
+    ]
