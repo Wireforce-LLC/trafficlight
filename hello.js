@@ -50,8 +50,8 @@ router.post(
 )
 
 router.get('/router/:route', Router.zeroHttp)
-router.get('/:router/:route', Router.zeroHttp)
-router.get('/api/:version/:router/:route', Router.zeroHttp)
+// router.get('/:router/:route', Router.zeroHttp)
+// router.get('/api/:version/:router/:route', Router.zeroHttp)
 
 
 if ($configurator.get("http.loggerEnabled")) {
