@@ -48,8 +48,8 @@ class Router {
 		}
 
 		if (_.get(configFile, 'monitoring.registerTraffic', false)) {
-			const remoteIp = req.headers['cf-connecting-ip'] || _.get(req.headers, _.get(configFile, 'router.configurator.headersForward.ip', "x-real-ip")) || null
-			const requestInfo = remoteIp ? IPDetect.get(remoteIp) : null
+			const remoteIp = req.headers['cf-connecting-ip'] || _.get(req.headers, _.get(configFile, 'router.configurator.headersForward.ip', "x-real-ip"))
+			const requestInfo = _.isString(remoteIp) ? IPDetect.get(remoteIp) : null
 
 			let mobileTrackingBaseGroup = null
 
@@ -109,7 +109,7 @@ class Router {
 
 				const mergedRaw = _.merge(
 					Filter.replaceValueInNestedObject(
-						$configurator.get('rotue.configurator.masking.response'),
+						$configurator.get('router.configurator.masking.response'),
 						'@none',
 						null
 					),
