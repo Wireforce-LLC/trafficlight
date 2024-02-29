@@ -1,0 +1,29 @@
+if:
+  filters: ["APPLE_IP"]
+  tools:
+    - IP:
+        country: ['BR', 'US']
+#  tools:
+#    - GEO:
+#        include: ['RU']
+#    - ping:
+#        pong: 1
+
+then:
+  type: JSON
+  data:
+#    file: $PWD/pix.json
+    raw:
+      {
+        aa: "@reqeust"
+      }
+
+else:
+  type: JSON
+  data:
+    # file: $PWD/pix.json
+    raw:
+      {
+        data: false,
+        this: "@request"
+      }

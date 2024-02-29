@@ -1,0 +1,28 @@
+{
+  "name": "trafficlight",
+  "version": "1.0.0",
+  "description": "",
+  "main": "hello.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "0http": "^3.5.2",
+    "basic-auth-parser": "^0.0.2-1",
+    "body-parser": "^1.20.2",
+    "express": "^4.18.3",
+    "leveldown": "^6.1.1",
+    "lodash": "^4.17.21",
+    "mmdb-lib": "^2.1.0",
+    "mongodb": "^6.3.0",
+    "pino": "^8.19.0",
+    "pino-pretty": "^10.3.1",
+    "sha1": "^1.1.1",
+    "toml": "^3.0.0",
+    "ua-parser-js": "^1.0.37",
+    "yaml": "^2.3.4",
+    "yml": "^1.0.0"
+  }
+}
