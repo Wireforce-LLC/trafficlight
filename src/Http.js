@@ -1,4 +1,6 @@
 const _ = require("lodash");
+const {$configurator} = require("./config");
+const zeroBasic = require("basic-auth-parser");
 
 class Http {
 	_req = undefined
@@ -62,6 +64,51 @@ class Http {
 		}
 
 		return this
+	}
+
+	requireBasicAuth(scheme = 'Basic', realm="") {
+		this.statusCode(401)
+		this._res?.headers?.set("WWW-Authenticate", `${scheme} realm=${realm}`)
+
+		return this
+	}
+
+	static basicAuthMiddleware(schema) {
+		return async (req, res, next) => {
+			if (!_.isString(req.headers.authorization)) {
+				return Http
+					.of(req, res)
+					.requireBasicAuth("Basic", "Hello")
+					.sendJsonObject(
+						Http.negative(
+							"This route requires 'Basic' authorization"
+						)
+					)
+			}
+
+			if (
+				$configurator.checkAuthorizationValidity(
+					schema,
+					zeroBasic(req.headers.authorization).username,
+					zeroBasic(req.headers.authorization).password,
+				)
+			) {
+				return next()
+			}
+
+			return Http
+				.of(req, res)
+				.requireBasicAuth("Basic", "Hello")
+				.sendJsonObject(
+					Http.negative(
+						"Login or password is incorrect"
+					)
+				)
+		}
+	}
+	end() {
+		this._res?.end()
+		return null
 	}
 }
 
