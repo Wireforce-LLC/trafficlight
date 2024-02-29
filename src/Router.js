@@ -108,19 +108,10 @@ class Router {
 			} else if (rawObject && (!filename || !fs.existsSync(filename))) {
 				const raw = Filter.replaceValueInNestedObject(rawObject, '@reqeust', _.pick(req, ['url', 'method', 'path', 'query']))
 
-				const mergedRaw = _.merge(
-					Filter.replaceValueInNestedObject(
-						$configurator.get('router.configurator.masking.response'),
-						'@none',
-						null
-					),
-					raw
-				)
-
 				return Http
 					.of(req, res)
 					.statusCode(200)
-					.sendJsonObject(mergedRaw)
+					.sendJsonObject(raw)
 
 			} else {
 				return Http
