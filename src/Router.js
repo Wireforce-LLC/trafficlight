@@ -9,6 +9,8 @@ const {configFile, $configurator} = require("./config");
 const UAParser = require("ua-parser-js");
 const sha1 = require("sha1");
 const {Mongo} = require("./Mongo");
+const mime = require('mime');
+const path0 = require("node:path")
 
 class Router {
 	static async zeroHttp(req, res) {
@@ -195,17 +197,43 @@ class Router {
 	}
 
 	static useRouter(name) {
+		const path = `${process.cwd()}/router/${name}.yml`
+
 		if (!this.isRouterExists(name)) {
 			return null
 		}
 
-		const data = String(fs.readFileSync(`${process.cwd()}/router/${name}.yml`))
+		if (mime.getType(path) !== 'text/yaml') {
+			return null
+		}
+
+		const data = String(fs.readFileSync(path))
 
 		return YAML.parse(data)
 	}
 
 	static isRouterExists(name) {
 		return fs.existsSync(`${process.cwd()}/router/${name}.yml`)
+	}
+
+	static getAllExistsRoutes() {
+		const path = process.cwd() + '/router'
+
+		if (!fs.existsSync(path)) {
+			return null
+		}
+
+		return _.uniq(
+			fs
+				.readdirSync(path)
+				.map(i => {
+					if (mime.getType(i) === 'text/yaml') {
+						return path0.basename(i).replace(path0.extname(path0.basename(i)), "")
+					}
+
+					return null
+				})
+		).filter(i => _.isString(i))
 	}
 }
 
