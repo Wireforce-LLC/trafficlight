@@ -9,8 +9,8 @@ const {configFile, $configurator} = require("./config");
 const UAParser = require("ua-parser-js");
 const sha1 = require("sha1");
 const {Mongo} = require("./Mongo");
-const mime = require('mime-types');
 const path0 = require("node:path")
+const mime = require('node-mime-types');
 
 class Router {
 	static async zeroHttp(req, res) {
@@ -203,7 +203,7 @@ class Router {
 			return null
 		}
 
-		if (mime.getType(path) !== 'text/yaml') {
+		if (mime.getMIMEType(path) !== 'text/yaml') {
 			return null
 		}
 
@@ -227,7 +227,7 @@ class Router {
 			fs
 				.readdirSync(path)
 				.map(i => {
-					if (mime.getType(i) === 'text/yaml') {
+					if (mime.getMIMEType(i) === 'text/yaml') {
 						return path0.basename(i).replace(path0.extname(path0.basename(i)), "")
 					}
 
