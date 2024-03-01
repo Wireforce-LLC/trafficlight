@@ -9,7 +9,7 @@ const {configFile, $configurator} = require("./config");
 const UAParser = require("ua-parser-js");
 const sha1 = require("sha1");
 const {Mongo} = require("./Mongo");
-const mime = require('mime');
+const mime = require('mime-types');
 const path0 = require("node:path")
 
 class Router {
