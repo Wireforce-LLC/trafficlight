@@ -49,6 +49,32 @@ router.post(
 	}
 )
 
+router.get(
+	"/system/routers",
+	Http.basicAuthMiddleware("admins"),
+	async (req, res, next) => {
+
+		Http
+			.of(req, res)
+			.sendJsonObject(
+				Http.positive(Router.getAllExistsRoutes())
+			)
+	}
+)
+
+router.get(
+	"/system/router/raw/:router",
+	Http.basicAuthMiddleware("admins"),
+	async (req, res, next) => {
+
+		Http
+			.of(req, res)
+			.sendJsonObject(
+				Http.positive(Router.useRouter(req.params.router))
+			)
+	}
+)
+
 router.get('/router/:route', Router.zeroHttp)
 // router.get('/:router/:route', Router.zeroHttp)
 // router.get('/api/:version/:router/:route', Router.zeroHttp)
