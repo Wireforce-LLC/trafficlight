@@ -10,6 +10,10 @@ const _ = require("lodash");
 const {Mongo} = require("./src/Mongo");
 const sequential = require('0http/lib/router/sequential')
 const {json, urlencoded} = require("express");
+const routerDatasetSelect = require('./0http/datasetSelect')
+const routerDatasetCount = require('./0http/datasetCount')
+const routerSystemRouters = require('./0http/systemRouters')
+const routerRouterRaw = require('./0http/routerRaw')
 
 const { router, server } = zero({
 	router: sequential({
@@ -24,59 +28,14 @@ const protocol = $configurator.get('http.protocol', 'tcp')
 router.use(urlencoded())
 router.use(json())
 
-router.post(
-	"/dataset/select",
-	Http.basicAuthMiddleware("admins"),
-	async (req, res, next) => {
-		const query = _.get(req, 'query', undefined)
-
-		const sort = _.get(query, 'sort', 'abc') === 'abc' ? 1 : -1
-		const limit = _.parseInt(_.get(query, 'limit', '128'))
-
-		logger.debug(`User '${zeroBasic(req.headers.authorization).username}' picked traffic information`)
-
-		const selected = await Mongo.selectRequestAnalyticObject(
-			sort,
-			limit,
-			req.body
-		)
-
-		Http
-			.of(req, res)
-			.sendJsonObject(
-				Http.positive(selected)
-			)
-	}
-)
-
-router.get(
-	"/system/routers",
-	Http.basicAuthMiddleware("admins"),
-	async (req, res, next) => {
-
-		Http
-			.of(req, res)
-			.sendJsonObject(
-				Http.positive(Router.getAllExistsRoutes())
-			)
-	}
-)
-
-router.get(
-	"/system/router/raw/:router",
-	Http.basicAuthMiddleware("admins"),
-	async (req, res, next) => {
-
-		Http
-			.of(req, res)
-			.sendJsonObject(
-				Http.positive(Router.useRouter(req.params.router))
-			)
-	}
-)
+routerDatasetSelect(router)
+routerDatasetCount(router)
+routerSystemRouters(router)
+routerRouterRaw(router)
 
 router.get('/router/:route', Router.zeroHttp)
-// router.get('/:router/:route', Router.zeroHttp)
+router.get('/:router/:route', Router.zeroHttp)
+
 // router.get('/api/:version/:router/:route', Router.zeroHttp)
 
 
