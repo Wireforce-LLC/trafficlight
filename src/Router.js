@@ -34,7 +34,7 @@ class Router {
 				)
 		}
 
-		const { if: _if, out: make } = await Router.make(
+		const { if: _if, out: make, meta } = await Router.make(
 			Router.useRouter(routeName),
 			routeName,
 			{ req, res }
@@ -80,7 +80,8 @@ class Router {
 				remoteClientInfo,
 				headers: req.headers,
 				mobileTrackingBaseGroup,
-				_if
+				_if,
+				meta,
 			})
 		}
 
@@ -124,6 +125,7 @@ class Router {
 			}
 		}
 	}
+
 	/**
 	 *
 	 * @param object
@@ -146,6 +148,7 @@ class Router {
 		let if_ = _.get(object, 'if', undefined)
 		let then_ = _.get(object, 'then', undefined)
 		let else_ = _.get(object, 'else', undefined)
+		let meta_ = _.get(object, 'meta', undefined)
 
 		if (_.isBoolean(if_)) {
 			if_ = () => if_ === true
@@ -190,9 +193,9 @@ class Router {
 		}
 
 		if (!_.includes(results, false) && !_.includes(results, undefined)) {
-			return { if: true, out: then_ }
+			return { if: true, out: then_, meta: meta_ }
 		} else {
-			return { if: false, out: else_ }
+			return { if: false, out: else_, meta: meta_ }
 		}
 	}
 
