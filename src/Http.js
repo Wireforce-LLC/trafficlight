@@ -55,13 +55,41 @@ class Http {
 	}
 
 	sendJsonObject(object = {}) {
-		this._res?.headers?.set("content-type", 'application/json')
+		this.setHeaders({
+			'Content-Type': 'application/json'
+		})
 
 		if (_.isObject(object)) {
 			this._res?.end(JSON.stringify(object, null, 1))
 		} else if (_.isString(object)) {
 			this._res?.end(object)
 		}
+
+		return this
+	}
+
+	setHeaders(object = {}) {
+		_.toPairs(object).map(k => {
+			this._res.setHeader(k[0], k[1])
+		})
+
+		return this
+	}
+
+	sendHtml(raw = "") {
+		this.setHeaders({
+			'Content-Type': 'text/html;'
+		})
+		this._res?.end(raw)
+		return this
+	}
+
+	redirect(url = "") {
+		this.statusCode(302)
+		this.setHeaders({
+			Location: url
+		})
+		this._res?.end()
 
 		return this
 	}

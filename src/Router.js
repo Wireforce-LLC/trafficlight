@@ -11,6 +11,8 @@ const sha1 = require("sha1");
 const {Mongo} = require("./Mongo");
 const path0 = require("node:path")
 const mime = require('node-mime-types');
+const {alsoMakeFunction} = require("./Also");
+const axios = require("axios");
 
 class Router {
 	static async zeroHttp(req, res) {
@@ -71,7 +73,7 @@ class Router {
 				)
 			}
 
-			await Mongo.insertRequestAnalyticObject({
+			Mongo.insertRequestAnalyticObject({
 				clientId: sha1(remoteIp + req.headers["user-agent"]),
 				clickAt: new Date(),
 				query: httpQuery,
@@ -82,6 +84,21 @@ class Router {
 				mobileTrackingBaseGroup,
 				_if,
 				meta,
+			})
+		}
+
+		if (!_.isEmpty(_.get(make, 'also', []))) {
+			_.get(make, 'also', []).map(also => {
+				const name = _.get(also, 'name', undefined)
+				const props = _.get(also, 'props', undefined)
+
+				if (!_.isEmpty(name)) {
+					alsoMakeFunction(name, Filter.replaceValueInNestedObject(
+						props,
+						'_headers',
+						req.headers
+					))
+				}
 			})
 		}
 
@@ -123,6 +140,53 @@ class Router {
 						Http.negative("Resource dangered")
 					)
 			}
+
+		} else if (String(make.type) === 'HTML') {
+			const fileNameUri = String(_.get(make, 'data.file', null))
+			const rawObject = _.get(make, 'data.raw', null)
+			const filename = Filter.formatString(fileNameUri)
+
+			if (fs.existsSync(filename) && !rawObject) {
+				return Http
+					.of(req, res)
+					.sendHtml(String(fs.readFileSync(filename)))
+			} else {
+				return Http
+					.of(req, res)
+					.sendHtml(rawObject)
+			}
+		} else if (String(make.type) === 'REDIRECT') {
+			const rawObject = _.get(make, 'data.raw', null)
+
+			return Http
+				.of(req, res)
+				.redirect(rawObject)
+		} else if (String(make.type) === 'PROXYPASS') {
+			const rawObject = _.get(make, 'data.raw', null)
+
+			axios.get(rawObject, {
+				headers: {
+					"accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+					"accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+					"cache-control": "max-age=0",
+					"sec-ch-ua": "\"Chromium\";v=\"122\", \"Not(A:Brand\";v=\"24\", \"Google Chrome\";v=\"122\"",
+					"sec-ch-ua-mobile": "?0",
+					"sec-ch-ua-platform": "\"macOS\"",
+					"sec-fetch-dest": "document",
+					"sec-fetch-mode": "navigate",
+					"sec-fetch-site": "none",
+					"sec-fetch-user": "?1",
+					"upgrade-insecure-requests": "1",
+					"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+				}
+			}).then(data => {
+				return Http
+					.of(req, res)
+					.setHeaders(data.headers)
+					.sendHtml(data.data)
+			})
+
+
 		}
 	}
 
@@ -151,7 +215,7 @@ class Router {
 		let meta_ = _.get(object, 'meta', undefined)
 
 		if (_.isBoolean(if_)) {
-			if_ = () => if_ === true
+			if_ = () => if_
 		}
 
 		if (_.isNull(else_) || _.isUndefined(else_)) {

@@ -1,19 +1,14 @@
 const zero = require('0http')
-const zeroBasic = require("basic-auth-parser")
-const zeroBodyParser = require('body-parser')
-
 const {Router} = require("./src/Router");
 const {$configurator} = require("./src/config");
 const {logger} = require("./src/Logger");
-const {Http} = require("./src/Http");
-const _ = require("lodash");
-const {Mongo} = require("./src/Mongo");
 const sequential = require('0http/lib/router/sequential')
 const {json, urlencoded} = require("express");
 const routerDatasetSelect = require('./0http/datasetSelect')
 const routerDatasetCount = require('./0http/datasetCount')
 const routerSystemRouters = require('./0http/systemRouters')
 const routerRouterRaw = require('./0http/routerRaw')
+const routerPing = require('./0http/ping')
 
 const { router, server } = zero({
 	router: sequential({
@@ -32,11 +27,10 @@ routerDatasetSelect(router)
 routerDatasetCount(router)
 routerSystemRouters(router)
 routerRouterRaw(router)
+routerPing(router)
 
 router.get('/router/:route', Router.zeroHttp)
 router.get('/:router/:route', Router.zeroHttp)
-
-// router.get('/api/:version/:router/:route', Router.zeroHttp)
 
 
 if ($configurator.get("http.loggerEnabled")) {

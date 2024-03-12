@@ -8,3 +8,5 @@ node_modules
 /.idea/
 *.iml
 .idea/
+example.html
+example.jsx
