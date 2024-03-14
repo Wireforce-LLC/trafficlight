@@ -3,14 +3,14 @@ const {Router} = require("../src/Router");
 
 module.exports = (router) => {
   router.get(
-    "/system/routers",
+    "/system/routers/folders",
     Http.basicAuthMiddleware("admins"),
-    async (req, res, next) => {
+    async (req, res) => {
 
       Http
         .of(req, res)
         .sendJsonObject(
-          Http.positive(Router.getAllExistsRoutes())
+          Http.positive(Router.getAllFolders())
         )
     }
   )
