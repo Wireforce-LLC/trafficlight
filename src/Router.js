@@ -302,6 +302,10 @@ class Router {
 				})
 		).filter(i => _.isString(i))
 	}
+
+	static getAllFolders() {
+		return _.filter(_.uniq(this.getAllExistsRoutes().map(router => _.get(router, 'meta.group'))), _.isString)
+	}
 }
 
 module.exports = {Router}
