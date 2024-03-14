@@ -3,13 +3,12 @@ const _ = require("lodash");
 const {logger} = require("../src/Logger");
 const zeroBasic = require("basic-auth-parser");
 const {Mongo} = require("../src/Mongo");
-const moment = require("moment");
 
 module.exports = (router) => {
   router.post(
     "/dataset/select",
     Http.basicAuthMiddleware("admins"),
-    async (req, res, next) => {
+    async (req, res) => {
       const query = _.get(req, 'query', undefined)
 
       const sort = _.get(query, 'sort', 'abc') === 'abc' ? 1 : -1
