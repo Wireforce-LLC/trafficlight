@@ -303,8 +303,12 @@ class Router {
 		).filter(i => _.isString(i))
 	}
 
+	static getAllExistsRoutesContents() {
+		return this.getAllExistsRoutes().map(this.useRouter)
+	}
+
 	static getAllFolders() {
-		return _.filter(_.uniq(this.getAllExistsRoutes().map(router => _.get(router, 'meta.group'))), _.isString)
+		return _.filter(_.uniq(this.getAllExistsRoutesContents().map(router => _.get(router, 'meta.group'))), _.isString)
 	}
 }
 
