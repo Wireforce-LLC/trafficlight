@@ -1,14 +1,15 @@
 const _ = require("lodash");
 const {logger} = require("./Logger");
 const axios = require("axios");
+const {$loggerKit} = require("../kits/LoggerKit");
 
 async function alsoMakeFunction(name, props) {
   const collection = {
     log(props) {
-      logger.debug(props)
+      $loggerKit.getLogger().debug(props)
     },
     axios(props) {
-      logger.debug(`axios sent request on '${props.url}' endpoint`)
+      $loggerKit.getLogger().debug(`axios sent request on '${props.url}' endpoint`)
       return axios(props)
     }
   }
