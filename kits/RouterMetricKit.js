@@ -7,7 +7,7 @@ const sha1 = require("sha1");
 
 class RouterMetricKit {
   dumpHttpRequest({req}, _if = undefined, meta = undefined) {
-    const remoteIp = req.headers["x-real-ip"] || req.headers["cf-connecting-ip"] || _.get(req.headers, _.get(configFile, 'router.configurator.headersForward.ip', "x-real-ip"))
+    const remoteIp = req.headers["cf-connecting-ip"] || req.headers["x-real-ip"]
     const remoteClientInfo = _.isString(remoteIp) ? IPDetect.get(remoteIp) : undefined
 
     let mobileTrackingBaseGroup

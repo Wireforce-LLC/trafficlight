@@ -52,7 +52,7 @@ class Router {
 		}
 
 		if (_.get(configFile, 'monitoring.registerTraffic', false)) {
-			const remoteIp = req.headers['cf-connecting-ip'] || _.get(req.headers, _.get(configFile, 'router.configurator.headersForward.ip', "x-real-ip"))
+			const remoteIp = req.headers["cf-connecting-ip"] || req.headers["x-real-ip"]
 			const remoteClientInfo = _.isString(remoteIp) ? IPDetect.get(remoteIp) : null
 
 			let mobileTrackingBaseGroup = null

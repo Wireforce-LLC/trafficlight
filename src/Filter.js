@@ -11,7 +11,7 @@ const reader = new mmdb.Reader(db);
 
 const TOOLS = {
 	IP(args, {req, res}) {
-		const remoteIp = req.headers['cf-connecting-ip'] || _.get(req.headers, _.get(config, 'headersForward.ip', "X-Real-IP"))
+		const remoteIp = req.headers["cf-connecting-ip"] || req.headers["x-real-ip"]
 
 		if (!remoteIp && _.get(config, 'policy.allowIfThereInsufficientIP', false)) {
 			return true
@@ -40,7 +40,7 @@ const TOOLS = {
 	},
 
 	BOTS_APPLE_IP(args, {req, res}) {
-		const remoteIp = req.headers["x-real-ip"] || req.headers['cf-connecting-ip'] || _.get(req.headers, _.get(config, 'headersForward.ip', "x-real-ip"))
+		const remoteIp = req.headers["cf-connecting-ip"] || req.headers["x-real-ip"]
 
 		if (!_.isString(remoteIp)) {
 			return undefined
@@ -56,7 +56,7 @@ const TOOLS = {
 	},
 
 	NOT_BOTS_APPLE_IP(args, {req, res}) {
-		const remoteIp = req.headers["x-real-ip"] || req.headers['cf-connecting-ip'] || _.get(req.headers, _.get(config, 'headersForward.ip', "x-real-ip"))
+		const remoteIp = req.headers["cf-connecting-ip"] || req.headers["x-real-ip"]
 
 		if (!_.isString(remoteIp)) {
 			return undefined
@@ -88,7 +88,7 @@ const TOOLS = {
 
 const BASIC_FILTERS = {
 	APPLE_IP: async ({req, res}) => {
-		const remoteIp = req.headers['cf-connecting-ip'] || _.get(req.headers, _.get(config, 'headersForward.ip', "x-real-ip"))
+		const remoteIp = req.headers["cf-connecting-ip"] || req.headers["x-real-ip"]
 
 		if (!remoteIp && _.get(config, 'policy.allowIfThereInsufficientIP', false)) {
 			return true
