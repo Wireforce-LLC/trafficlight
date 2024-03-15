@@ -9,19 +9,7 @@ const db = readFileSync(path.normalize(`${process.cwd()}/country_asn.mmdb`));
 
 const reader = new mmdb.Reader(db);
 
-// console.log(reader.get('139.178.131.9')); // inferred type `CityResponse`
-// console.log(reader.getWithPrefixLength('66.6.44.4'));
-
-
 const TOOLS = {
-	/**
-	 * @ignore
-	 * @param args
-	 * @param req
-	 * @param res
-	 * @return {boolean}
-	 * @constructor
-	 */
 	IP(args, {req, res}) {
 		const remoteIp = req.headers['cf-connecting-ip'] || _.get(req.headers, _.get(config, 'headersForward.ip', "X-Real-IP"))
 
@@ -49,6 +37,52 @@ const TOOLS = {
 		}
 
 		return results.includes(false) === false
+	},
+
+	BOTS_APPLE_IP(args, {req, res}) {
+		const remoteIp = req.headers["x-real-ip"] || req.headers['cf-connecting-ip'] || _.get(req.headers, _.get(config, 'headersForward.ip', "x-real-ip"))
+
+		if (!_.isString(remoteIp)) {
+			return undefined
+		}
+
+		const requestInfo = reader.get(remoteIp)
+
+		if (requestInfo == null) {
+			return undefined
+		}
+
+		return String(_.get(requestInfo, 'as_domain', 'false')).toLowerCase() === 'apple.com'
+	},
+
+	NOT_BOTS_APPLE_IP(args, {req, res}) {
+		const remoteIp = req.headers["x-real-ip"] || req.headers['cf-connecting-ip'] || _.get(req.headers, _.get(config, 'headersForward.ip', "x-real-ip"))
+
+		if (!_.isString(remoteIp)) {
+			return undefined
+		}
+
+		const requestInfo = reader.get(remoteIp)
+
+		if (requestInfo == null) {
+			return undefined
+		}
+
+		return String(_.get(requestInfo, 'as_domain', 'false')).toLowerCase() !== 'apple.com'
+	},
+
+	EQ(args) {
+		const value1 = _.get(args, 'value1')
+		const value2 = _.get(args, 'value2')
+
+		return value1 === value2
+	},
+
+	NOT_EQ(args) {
+		const value1 = _.get(args, 'value1')
+		const value2 = _.get(args, 'value2')
+
+		return value1 !== value2
 	}
 }
 
@@ -69,7 +103,7 @@ const BASIC_FILTERS = {
 		}
 
 		return String(_.get(requestInfo, 'as_domain', 'false')).toLowerCase() === 'apple.com'
-	}
+	},
 }
 
 class Filter {
@@ -104,13 +138,25 @@ class Filter {
 		return obj;
 	}
 
+	static maskObject(target, mask) {
+		let _target = target
+		_.toPairs(mask).map(pair => {
+			if (!pair[0].startsWith("$")) {
+				throw Error("All mask keys must begin with the $ symbol")
+			}
+
+			_target = Filter.replaceValueInNestedObject(_target, pair[0], pair[1])
+		})
+
+		return _target
+	}
 
 	static async useFilter(name, req, res) {
 		return await _.get(this.FILTERS, name, () => undefined)({req, res})
 	}
 
 	static async useTool({name, args}, req, res) {
-		return await _.get(TOOLS, name, (args, {req, res}) => undefined).call(null, args, {req, res})
+		return _.get(TOOLS, name, (args, {req, res}) => undefined).call(null, args, {req, res});
 	}
 
 }
