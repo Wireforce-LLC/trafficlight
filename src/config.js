@@ -17,6 +17,9 @@ if (fs.existsSync(`${process.cwd()}/config.default.toml`)) {
 
 const configFile = parse(configDataRaw);
 
+/**
+ * @deprecated
+ */
 class Configurator {
 	getDbPath(path) {
 		return _.find(_.get(configFile, 'databases.mongodb.paths'), i => i[0] === path)[1]
