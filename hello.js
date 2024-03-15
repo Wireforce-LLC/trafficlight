@@ -158,7 +158,7 @@ $serviceKit.createIntervalService('jobCleanerNoIndex', () => {
 		startTime: moment(new Date(1999, 1, 1)).toISOString(),
 		endTime: moment(new Date(2999, 1, 1)).toISOString(),
 	}).then(console.log)
-}, 86400)
+}, 86400 * 1000)
 
 $serviceKit.spawnService('jobCleanerNoIndex')
 
