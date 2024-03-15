@@ -2,7 +2,8 @@ const {Http} = require("../src/Http");
 const _ = require("lodash");
 const {logger} = require("../src/Logger");
 const zeroBasic = require("basic-auth-parser");
-const {Mongo} = require("../src/Mongo");
+const {$databaseKit} = require("../kits/DatabaseKit");
+const {$loggerKit} = require("../kits/LoggerKit");
 
 module.exports = (router) => {
   router.post(
@@ -14,14 +15,16 @@ module.exports = (router) => {
       const sort = _.get(query, 'sort', 'abc') === 'abc' ? 1 : -1
       const limit = _.parseInt(_.get(query, 'limit', '128'))
 
-      logger.debug(`User '${zeroBasic(req.headers.authorization).username}' picked traffic information`)
+      $loggerKit.getLogger().debug(`User '${zeroBasic(req.headers.authorization).username}' picked traffic information`, {path: "/dataset/select"})
 
-      const selected = await Mongo.selectRequestAnalyticObject(
-        sort,
-        limit,
+      const selected = await $databaseKit.findHttpRequests(
         req.body,
-        query.startTime,
-        query.endTime
+        {
+          sort: parseInt(sort),
+          limit: parseInt(limit),
+          startTime: query.startTime,
+          endTime: query.endTime
+        }
       )
 
       Http
