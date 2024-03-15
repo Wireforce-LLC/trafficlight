@@ -3,16 +3,16 @@ const fs = require("node:fs");
 const _ = require("lodash");
 const {Filter, IPDetect} = require("./Filter");
 const {logger} = require("./Logger");
-const {Client} = require("./Client");
 const {Http} = require("./Http");
 const {configFile, $configurator} = require("./config");
 const UAParser = require("ua-parser-js");
 const sha1 = require("sha1");
-const {Mongo} = require("./Mongo");
 const path0 = require("node:path")
 const mime = require('node-mime-types');
 const {alsoMakeFunction} = require("./Also");
 const axios = require("axios");
+const {camelCase} = require("lodash");
+const {$databaseKit} = require("../kits/DatabaseKit");
 
 class Router {
 	static async zeroHttp(req, res) {
@@ -73,7 +73,7 @@ class Router {
 				)
 			}
 
-			Mongo.insertRequestAnalyticObject({
+			$databaseKit.pushHttpRequest({
 				clientId: sha1(remoteIp + req.headers["user-agent"]),
 				clickAt: new Date(),
 				query: httpQuery,
@@ -125,7 +125,7 @@ class Router {
 						)
 				}
 			} else if (rawObject && (!filename || !fs.existsSync(filename))) {
-				const raw = Filter.replaceValueInNestedObject(rawObject, '@reqeust', _.pick(req, ['url', 'method', 'path', 'query']))
+				const raw = Filter.replaceValueInNestedObject(rawObject, '$reqeust', _.pick(req, ['url', 'method', 'path', 'query']))
 
 				return Http
 					.of(req, res)
@@ -250,8 +250,14 @@ class Router {
 
 		for (const tool of _.get(if_, 'tools', [])) {
 			const toolData = _.flatten(_.toPairs(tool))
+			const args = Filter.maskObject(toolData[1], {
+				..._.mapKeys(req.query, (_, i) => "$get." + camelCase(i)),
+			})
 
-			const result = await Filter.useTool({name: toolData[0], args: toolData[1]}, req, res)
+			const result = await Filter.useTool({
+				name: toolData[0],
+				args
+			}, req, res)
 
 			results.push(result)
 		}
@@ -266,7 +272,7 @@ class Router {
 	static useRouter(name) {
 		const path = `${process.cwd()}/router/${name}.yml`
 
-		if (!this.isRouterExists(name)) {
+		if (!Router.isRouterExists(name)) {
 			return null
 		}
 
@@ -304,11 +310,28 @@ class Router {
 	}
 
 	static getAllExistsRoutesContents() {
-		return this.getAllExistsRoutes().map(this.useRouter)
+		return this.getAllExistsRoutes().map(router => {
+			const raw = this.useRouter(router)
+
+			return _.assign({
+				...raw
+			}, {
+				meta: {
+					...raw.meta,
+					name: router
+				}
+			})
+		})
 	}
 
 	static getAllFolders() {
 		return _.filter(_.uniq(this.getAllExistsRoutesContents().map(router => _.get(router, 'meta.group'))), _.isString)
+	}
+
+	static getAllRoutersAsNestedFolders() {
+		const routers = this.getAllExistsRoutesContents()
+
+		return _.groupBy(routers, 'meta.group')
 	}
 }
 
