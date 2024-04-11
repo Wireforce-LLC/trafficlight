@@ -46,65 +46,28 @@ If you prefer containerization, you can run TrafficLight using Docker Compose.
 
 The configuration is divided into several key sections: `meta`, `if`, `then`, and `else`. Each section performs a unique role in determining how traffic is routed based on the defined conditions.
 
-### Meta Section
+### First router
 
 ```yaml
 meta:
   group: Group Name
-```
+  noindex: false
 
-- **group**: Identifies the group or category this router configuration belongs to. In this example, it's set to "Group Name".
-
-### Conditional Filtering (If Section)
-
-```yaml
 if:
-  filters:
-    - NOT_APPLE_IP
-  tools:
-    - IP:
-        country: ["US", "UK"]
-```
+  tools: []
 
-This section specifies the conditions under which the `then` action will be triggered.
-
-- **filters**: Lists the filters applied to incoming traffic. Here it checks for traffic that does not originate from an Apple IP address (`NOT_APPLE_IP`).
-- **tools**: Defines additional tools or checks to apply. In this case, it checks if the incoming IP is from USA or UK. The commented lines show examples of how to add more countries.
-
-### Then Section
-
-```yaml
 then:
   type: JSON
   data:
     raw:
       ...
-```
 
-This section defines the actions to take if the `if` conditions are met.
-
-- **type**: Specifies the type of response or action to be taken. Here, it is set to JSON.
-
-- **data(raw)**: The data to be returned or the action to be executed. It includes settings such as allowing the traffic (`allow: true`) and routing it through a specified proxy URL.
-
-### Else Section
-
-```yaml
 else:
-  also:
-   - axios:
-      url: "https://p4p3r.com/..."
   type: JSON
   data:
     raw:
      ...
 ```
-
-Defines alternative actions if the `if` conditions are not met.
-
-- **also**: Additional actions or commands to execute. Here, it's making a call to a specified URL using `axios`.
-
-- **type & data**: Similar to the `then` section, specifies the response or action type and details. Though `data` is empty here, typically this would be where alternative data or commands are specified.
 
 ## Project Structure
 

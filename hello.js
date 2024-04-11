@@ -145,7 +145,7 @@ if ($configurator.get("http.loggerEnabled")) {
    * @param {Object} req - The HTTP request object.
    * @param {Object} res - The HTTP response object.
    */
-  server.on("request", function (req, res) {
+  server.on("request", function(req, res) {
     $loggerKit.getLogger().debug({ req, res });
   });
 }
@@ -190,16 +190,22 @@ $serviceKit.createIntervalService(
   86400 * 1000,
 );
 
+/**
+ * This service is designed to periodically clean up traffic records marked with a 'noindex' flag.
+ * It targets both 'routerMeta.noindex' and 'meta.noindex' within the stored HTTP requests,
+ * ensuring that no indexed records are purged from the system on a daily basis.
+ */
 $serviceKit.spawnService("jobCleanerNoIndex");
 
 /**
  * Starts the server listening on the specified port and host.
  * Logs the server's readiness and its address upon successful launch.
  */
-server.listen(parseInt(port), String(host), function () {
+server.listen(parseInt(port), String(host), function() {
   $loggerKit
     .getLogger()
     .info("The TrafficLight is ready to route your traffic");
+
   $loggerKit
     .getLogger()
     .info(
