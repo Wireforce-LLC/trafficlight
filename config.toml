@@ -5,38 +5,49 @@ name = 'Default Router'
 host = '0.0.0.0'
 port = 3001
 loggerEnabled = false
-engine = '0http' # 0http / express. express = experemental
+engine = '0http'      # 0http / express. express = experemental
 
 # TCP = http
 # UDP = https
 protocol = "tcp"
 
 [auth]
-admins = [
-    ["root", "root"]
-]
+admins = [["root", "root"]]
 
 
 [rotuer]
-    [router.configurator]
-        [router.configurator.masking.response]
-        # pass
+[router.configurator]
+[router.configurator.masking.response]
+# pass
 
-        [router.configurator.headersForward]
-        ip = "x-real-ip"
+[router.configurator.headersForward]
+ip = "x-real-ip"
 
 [monitoring]
 registerTraffic = true
 useMobileTrackingBaseGroup = true
+allowIfThereInsufficientIP = false
 
 [databases]
-    [databases.mongodb]
-    ip = "127.0.0.1"
-    port = '3201'
+[databases.mongodb]
+ip = "127.0.0.1"
+port = '3201'
 
-    paths = [
-        ["db/traffic", "traffic"],
-        ["db/traffic/routers", "routers"],
-        ["db/events", "events"],
-        ["db/events/events", "events"],
-    ]
+paths = [
+    [
+        "db/traffic",
+        "traffic",
+    ],
+    [
+        "db/traffic/routers",
+        "routers",
+    ],
+    [
+        "db/events",
+        "events",
+    ],
+    [
+        "db/events/events",
+        "events",
+    ],
+]

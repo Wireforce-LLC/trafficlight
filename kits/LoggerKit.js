@@ -1,19 +1,19 @@
-require('pino-pretty')
+require("pino-pretty");
 
 class LoggerKit {
   getLogger() {
-    return require('pino')({
-      level: 'trace',
+    return require("pino")({
+      level: "trace",
       transport: {
-        target: 'pino-pretty',
+        target: "pino-pretty",
         options: {
-          colorize: true
-        }
-      }
-    })
+          colorize: true,
+        },
+      },
+    });
   }
 }
 
-const $loggerKit = new LoggerKit()
+const $loggerKit = new LoggerKit();
 
-module.exports = {$loggerKit}
+module.exports = { $loggerKit };

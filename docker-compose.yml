@@ -1,0 +1,33 @@
+version: '3'
+services:
+  mongo:
+    image: mongo
+    restart: always
+    command: mongod --port 3102
+    volumes:
+      - ./docker/mongo:/data/db
+
+  trafficlight:
+    links:
+      - mongo
+    image: node:18
+    restart: always
+    volumes:
+      - ./docker/traffic-light:/traffic
+    command: bash -c "cd /traffic && npm i && node hello.js"
+
+  app:
+    links:
+      - mongo
+      - trafficlight
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    ports:
+      - '443:443'
+      - '80:80'
+      - '81:81'
+    volumes:
+      - ./docker/npm_data:/data
+      - ./docker/npm_letsencrypt:/etc/letsencrypt
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
