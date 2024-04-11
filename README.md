@@ -9,10 +9,6 @@ To download and start the TrafficLight project, as well as configure it using `p
    ```bash
    git clone https://github.com/Wireforce-LLC/trafficlight.git
    ```
-2. Move to the project's root directory:
-   ```bash
-   cd trafficlight
-   ```
 
 ### Configuration with PM2
 

@@ -1,33 +1,33 @@
 version: '3'
 services:
-  mongo:
-    image: mongo
-    restart: always
-    command: mongod --port 3102
-    volumes:
+  mongo: # MongoDB service configuration
+    image: mongo # Specifies the MongoDB image to use
+    restart: always # Container will always restart
+    command: mongod --port 3102 # Command to run MongoDB on port 3102
+    volumes: # Mounts host directory as container volume
       - ./docker/mongo:/data/db
 
-  trafficlight:
-    links:
+  trafficlight: # Traffic Light application service configuration
+    links: # Links this service to the mongo service
       - mongo
-    image: node:18
-    restart: always
-    volumes:
-      - ./docker/traffic-light:/traffic
-    command: bash -c "cd /traffic && npm i && node hello.js"
+    image: node:18 # Specifies the Node.js image to use
+    restart: always # Container will always restart
+    volumes: # Mounts host directory as container volume
+      - ./:/traffic
+    command: bash -c "cd /traffic && npm i && node hello.js" # Command to install dependencies and run the app
 
-  app:
-    links:
+  app: # Nginx Proxy Manager service configuration
+    links: # Links this service to the mongo and trafficlight services
       - mongo
       - trafficlight
-    image: 'jc21/nginx-proxy-manager:latest'
-    restart: unless-stopped
-    ports:
+    image: 'jc21/nginx-proxy-manager:latest' # Specifies the Nginx Proxy Manager image to use
+    restart: unless-stopped # Container restart policy
+    ports: # Ports that will be exposed to the host
       - '443:443'
       - '80:80'
       - '81:81'
-    volumes:
+    volumes: # Mounts host directories as container volumes
       - ./docker/npm_data:/data
       - ./docker/npm_letsencrypt:/etc/letsencrypt
-    extra_hosts:
+    extra_hosts: # Adds entries to the container's /etc/hosts file
       - "host.docker.internal:host-gateway"
