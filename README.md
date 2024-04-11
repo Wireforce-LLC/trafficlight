@@ -1,6 +1,12 @@
+
 # w/trafficlight
 
-The TrafficLight project is a comprehensive tool for managing and directing internet traffic, similar to Keitaro. It allows for the routing of traffic based on various criteria, such as IP addresses, geolocation, and device type. The project offers extensive capabilities for analyzing and optimizing data flows.
+<img src="https://i.ibb.co/4Kk4fQ8/Frame-6.png" align="right" width="80" height="80">
+
+The **TrafficLight** project is a comprehensive tool for managing and directing internet traffic, similar to Keitaro. It allows for the routing of traffic based on various criteria, such as IP addresses, geolocation, and device type. The project offers extensive capabilities for analyzing and optimizing data flows.
+
+![JavaScript](https://img.shields.io/badge/javascript-yellow?style=for-the-badge&logo=javascript&logoColor=white)
+![Bash](https://img.shields.io/badge/bash-black?style=for-the-badge&logo=zsh&logoColor=white)
 
 ## Getting Started
 To download and start the TrafficLight project, as well as configure it using `pm2` or `Docker Compose`, follow these instructions.
