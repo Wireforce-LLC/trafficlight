@@ -2,7 +2,7 @@
 
 The TrafficLight project is a comprehensive tool for managing and directing internet traffic, similar to Keitaro. It allows for the routing of traffic based on various criteria, such as IP addresses, geolocation, and device type. The project offers extensive capabilities for analyzing and optimizing data flows.
 
-## Installation
+## Getting Started
 To download and start the TrafficLight project, as well as configure it using `pm2` or `Docker Compose`, follow these instructions.
 
 1. Clone the repository using the command:
@@ -57,7 +57,7 @@ meta:
   group: Group Name
 ```
 
-- **group**: Identifies the group or category this router configuration belongs to. In this example, it's set to "Blaze".
+- **group**: Identifies the group or category this router configuration belongs to. In this example, it's set to "Group Name".
 
 ### Conditional Filtering (If Section)
 
@@ -82,8 +82,7 @@ then:
   type: JSON
   data:
     raw:
-      allow: true
-      proxy: "..."
+      ...
 ```
 
 This section defines the actions to take if the `if` conditions are met.
@@ -102,6 +101,7 @@ else:
   type: JSON
   data:
     raw:
+     ...
 ```
 
 Defines alternative actions if the `if` conditions are not met.
