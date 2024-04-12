@@ -1,17 +1,17 @@
-const YAML = require("yaml");
-const fs = require("node:fs");
 const _ = require("lodash");
+const axios = require("axios");
+const fs = require("node:fs");
+const mime = require("node-mime-types");
+const path0 = require("node:path");
+const sha1 = require("sha1");
+const UAParser = require("ua-parser-js");
+const YAML = require("yaml");
+const { camelCase } = require("lodash");
 const { Filter, IPDetect } = require("./Filter");
-const { logger } = require("./Logger");
 const { Http } = require("./Http");
 const { configFile, $configurator } = require("./config");
-const UAParser = require("ua-parser-js");
-const sha1 = require("sha1");
-const path0 = require("node:path");
-const mime = require("node-mime-types");
+const { logger } = require("./Logger");
 const { alsoMakeFunction } = require("./Also");
-const axios = require("axios");
-const { camelCase } = require("lodash");
 const { $databaseKit } = require("../kits/DatabaseKit");
 
 class Router {
