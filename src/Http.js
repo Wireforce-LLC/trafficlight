@@ -155,26 +155,29 @@ class Http {
     return async (req, res, next) => {
       if (!_.isString(req.headers.authorization)) {
         return Http.of(req, res)
-          .requireBasicAuth("Basic", "Hello")
+          .requireBasicAuth("Basic", "Protected Area")
+          .statusCode(401)
           .sendJsonObject(
-            Http.negative("This route requires 'Basic' authorization"),
+            Http.negative("Unauthorized: 'Basic' authorization header is missing.", 401),
           );
       }
 
-      if (
-        $configurator.checkAuthorizationValidity(
-          schema,
-          zeroBasic(req.headers.authorization).username,
-          zeroBasic(req.headers.authorization).password,
-        )
-      ) {
-        return next();
+      const credentials = zeroBasic(req.headers.authorization);
+      const isValid = $configurator.checkAuthorizationValidity(
+        schema,
+        credentials.username,
+        credentials.password,
+      );
+
+      if (!isValid) {
+        return Http.of(req, res)
+          .requireBasicAuth("Basic", "Protected Area")
+          .statusCode(403)
+          .sendJsonObject(Http.negative("Forbidden: Incorrect login or password.", 403));
       }
 
-      return Http.of(req, res)
-        .requireBasicAuth("Basic", "Hello")
-        .sendJsonObject(Http.negative("Login or password is incorrect"));
-    };
+      return next();
+    }
   }
 
   /**
