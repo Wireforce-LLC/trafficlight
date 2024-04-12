@@ -2,30 +2,26 @@ const { Router } = require("./src/Router");
 const { $configurator } = require("./src/config");
 const { json, urlencoded } = require("express");
 
-const routerDatasetSelect = require("./0http/datasetSelect");
-const routerDatasetCount = require("./0http/datasetCount");
-const routerSystemRouters = require("./0http/systemRouters");
-const routerSystemRoutersFolders = require("./0http/systemRoutersFolders");
-const routerSystemRoutersAsNested = require("./0http/systemRoutersAsNested");
-const routerRouterRaw = require("./0http/routerRaw");
-const routerPing = require("./0http/ping");
+const routerDatasetManipulation = require("./0http/datasetManipulations");
+const routerSystem = require("./0http/system");
 
 const { $serviceKit } = require("./kits/ServiceKit");
 const { $databaseKit } = require("./kits/DatabaseKit");
 const { $loggerKit } = require("./kits/LoggerKit");
 
-const { $configuratorKit } = require("./kits/ConfiguratorKit");
+const _ = require("lodash");
+const moment = require("moment");
 const zero = require("0http");
 const sequential = require("0http/lib/router/sequential");
+
+const { $configuratorKit } = require("./kits/ConfiguratorKit");
 const { $milkyWayKit } = require("./kits/MilkyWayKit");
-const _ = require("lodash");
 const { Http } = require("./src/Http");
 const { $routerMetricKit } = require("./kits/RouterMetricKit");
 const { alsoMakeFunction } = require("./src/Also");
 const { Filter } = require("./src/Filter");
 const { $alsoLineKit } = require("./kits/AlsoLineKit");
 const { camelCase } = require("lodash");
-const moment = require("moment");
 
 let router;
 let server;
@@ -56,14 +52,14 @@ const protocol = $configurator.get("http.protocol", "tcp");
 
 router.use(urlencoded());
 router.use(json());
+router.use((req, _, next) => {
+  $loggerKit.getLogger().debug(`${req.method} ${req.url}`)
+  next()
+});
 
-routerSystemRoutersAsNested(router);
-routerSystemRoutersFolders(router);
-routerSystemRouters(router);
-routerDatasetSelect(router);
-routerDatasetCount(router);
-routerRouterRaw(router);
-routerPing(router);
+routerDatasetManipulation(router);
+routerSystem(router);
+
 
 const mainRouterDynamic = (req, res) => {
   const route = _.get(req, "params.route", undefined)?.toLowerCase();
