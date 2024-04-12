@@ -69,13 +69,16 @@ module.exports = (router) => {
     async (req, res) => {
 
       const allAllowedCount = await $databaseKit.countHttpRequest({
-        "meta.noindex": { "$ne": true },
+        "meta.noindex": { $ne: true },
         _if: true
       });
 
       const allDisallowedCount = await $databaseKit.countHttpRequest({
-        "meta.noindex": { "$ne": true },
-        _if: false
+        "$or": [
+          { "meta.noindex": true },
+          { "meta": null }
+        ],
+        _if: { $ne: true }
       });
 
       const allHttpRequestsCount = await $databaseKit.countHttpRequest({
