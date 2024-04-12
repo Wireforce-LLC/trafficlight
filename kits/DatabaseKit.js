@@ -1,18 +1,28 @@
+const moment = require("moment/moment");
 const { MongoClient } = require("mongodb");
 const { logger } = require("../src/Logger");
-const moment = require("moment/moment");
 const { $configuratorKit } = require("./ConfiguratorKit");
 const { $loggerKit } = require("./LoggerKit");
 
 class DatabaseClient {
-  static ip = $configuratorKit.get("databases.mongodb.ip", "127.0.0.1");
-  static port = $configuratorKit.get("databases.mongodb.port", "27017");
+  static ip = $configuratorKit.get("databases.mongodb.ip");
+  static port = $configuratorKit.get("databases.mongodb.port");
 
   constructor() {
+    if (!DatabaseClient.ip) {
+      throw new Error("MongoDB IP not specified. Please provide a valid IP in the configurator.");
+    }
+
+    if (!DatabaseClient.port) {
+      throw new Error("MongoDB port not specified. Please provide a valid port in the configurator.");
+    }
+
     const url = `mongodb://${DatabaseClient.ip}:${DatabaseClient.port}`;
+
     logger.debug(
       `A database connection client has been created using connection data '${url}'`,
     );
+
     this.client = new MongoClient(url);
   }
 
