@@ -1,10 +1,9 @@
 const _ = require("lodash");
-const zeroBasic = require("basic-auth-parser");
 
-const { Http } = require("../src/Http");
-const { logger } = require("../src/Logger");
 const { $databaseKit } = require("../kits/DatabaseKit");
-const { $loggerKit } = require("../kits/LoggerKit");
+const { json } = require("../src/NewHttp").response;
+const middleware = require("../src/NewHttp").middleware;
+
 
 module.exports = (router) => {
   /**
@@ -15,25 +14,22 @@ module.exports = (router) => {
    */
   router.post(
     "/dataset/count",
-    Http.basicAuthMiddleware("admins"),
+
+    middleware.authByScheme("admins"),
     async (req, res) => {
       const query = _.get(req, "query", undefined);
-
-      logger.debug(
-        `User '${zeroBasic(req.headers.authorization).username}' picked traffic information`,
-        { path: "/dataset/count" },
-      );
 
       const count = await $databaseKit.countHttpRequest(req.body, {
         startTime: query.startTime,
         endTime: query.endTime,
       });
 
-      Http.of(req, res).sendJsonObject(
-        Http.positive({
-          count,
-        }),
-      );
+      return json({ req, res }, {
+        statusCode: 200,
+        data: {
+          count
+        }
+      })
     },
   );
 
@@ -44,19 +40,13 @@ module.exports = (router) => {
    */
   router.post(
     "/dataset/select",
-    Http.basicAuthMiddleware("admins"),
+
+    middleware.authByScheme("admins"),
     async (req, res) => {
       const query = _.get(req, "query", undefined);
 
       const sort = _.get(query, "sort", "abc") === "abc" ? 1 : -1;
       const limit = _.parseInt(_.get(query, "limit", "128"));
-
-      $loggerKit
-        .getLogger()
-        .debug(
-          `User '${zeroBasic(req.headers.authorization).username}' picked traffic information`,
-          { path: "/dataset/select" },
-        );
 
       const selected = await $databaseKit.findHttpRequests(req.body, {
         sort: parseInt(sort),
@@ -65,7 +55,10 @@ module.exports = (router) => {
         endTime: query.endTime,
       });
 
-      Http.of(req, res).sendJsonObject(Http.positive(selected));
+      return json({ req, res }, {
+        statusCode: 200,
+        data: selected
+      })
     },
   );
 };

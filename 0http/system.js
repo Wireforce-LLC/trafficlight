@@ -2,9 +2,10 @@ const _ = require("lodash");
 const YAML = require("yaml");
 const fs = require("node:fs")
 
-const { Http } = require("../src/Http");
+const { json } = require("../src/NewHttp").response;
+const middleware = require("../src/NewHttp").middleware;
+
 const { Router } = require("../src/Router");
-const { logger } = require("../src/Logger");
 
 
 const schema = {
@@ -85,36 +86,64 @@ function validateObject(object, schema, path = "") {
 
 module.exports = (router) => {
   router.get(
-    "/system/ping",
-    Http.basicAuthMiddleware("admins"),
+    "/system/health",
+
     async (req, res) => {
-      Http.of(req, res).sendJsonObject(Http.positive("pong"));
+      return json({ req, res }, {
+        statusCode: 200,
+        data: {
+
+        }
+      })
+    },
+  );
+
+  router.get(
+    "/system/ping",
+
+    middleware.authByScheme('admins'),
+    async (req, res) => {
+      return json({ req, res }, {
+        statusCode: 200,
+        data: {
+          message: "Pong!"
+        }
+      })
     },
   );
 
   router.get(
     "/system/routers/nested",
-    Http.basicAuthMiddleware("admins"),
+
+    middleware.authByScheme('admins'),
     async (req, res) => {
       const content = Router.getAllRoutersAsNestedFolders()
 
-      Http.of(req, res).sendJsonObject(
-        Http.positive(content),
-      );
-    },
+      return json({ req, res }, {
+        statusCode: 200,
+        data: content
+      })
+    }
   );
 
   router.get(
     "/system/routers/folders",
-    Http.basicAuthMiddleware("admins"),
+
+    middleware.authByScheme('admins'),
     async (req, res) => {
-      Http.of(req, res).sendJsonObject(Http.positive(Router.getAllFolders()));
-    },
+      const content = Router.getAllFolders()
+
+      return json({ req, res }, {
+        statusCode: 200,
+        data: content
+      })
+    }
   );
 
   router.get(
     "/system/routers",
-    Http.basicAuthMiddleware("admins"),
+
+    middleware.authByScheme('admins'),
     async (req, res) => {
       const type = _.get(req, "query.type", "plain");
 
@@ -122,54 +151,73 @@ module.exports = (router) => {
         case "nested": {
           const content = Router.getAllRoutersAsNestedFolders();
 
-          return Http.of(req, res).sendJsonObject(Http.positive(content));
+          return json({ req, res }, {
+            statusCode: 200,
+            data: content
+          })
         }
 
         case "folders": {
           const content = Router.getAllFolders();
 
-          return Http.of(req, res).sendJsonObject(Http.positive(content));
+          return json({ req, res }, {
+            statusCode: 200,
+            data: content
+          })
         }
 
         case "contents": {
           const content = Router.getAllExistsRoutesContents();
 
-          return Http.of(req, res).sendJsonObject(Http.positive(content));
+          return json({ req, res }, {
+            statusCode: 200,
+            data: content
+          })
         }
 
         default: {
           const content = Router.getAllExistsRoutes();
 
-          return Http.of(req, res).sendJsonObject(Http.positive(content));
+          return json({ req, res }, {
+            statusCode: 200,
+            data: content
+          })
         }
       }
-    },
+    }
   );
 
   router.get(
     "/system/router/raw/:router",
-    Http.basicAuthMiddleware("admins"),
+
+    middleware.authByScheme('admins'),
     async (req, res) => {
       if (!req.params.router || typeof req.params.router !== 'string' || /[\s\d]/.test(req.params.router)) {
-        return Http.of(req, res).statusCode(400).sendJsonObject(
-          Http.negative("Invalid router name. Must be a string without spaces and numbers.", 400)
-        );
+        return json({ req, res }, {
+          statusCode: 400,
+          data: "Invalid router name. Must be a string without spaces and numbers."
+        })
       }
 
       const content = Router.useRouter(req.params.router);
 
-      Http.of(req, res).sendJsonObject(Http.positive(content));
+      return json({ req, res }, {
+        statusCode: 200,
+        data: content
+      })
     },
   );
 
   router.post(
     "/system/router/raw/:router",
-    Http.basicAuthMiddleware("admins"),
+
+    middleware.authByScheme('admins'),
     async (req, res) => {
       if (!req.params.router || typeof req.params.router !== 'string' || /[\s\d]/.test(req.params.router)) {
-        return Http.of(req, res).statusCode(400).sendJsonObject(
-          Http.negative("Invalid router name. Must be a string without spaces and numbers.", 400)
-        );
+        return json({ req, res }, {
+          statusCode: 400,
+          data: "Invalid router name. Must be a string without spaces and numbers."
+        })
       }
 
       const content = YAML.stringify(req.body)
@@ -178,7 +226,10 @@ module.exports = (router) => {
       const errors = validateObject(req.body, schema);
 
       if (errors.length > 0) {
-        return Http.of(req, res).sendJsonObject(Http.negative({ errors }));
+        return json({ req, res }, {
+          statusCode: 400,
+          data: errors
+        })
       }
 
       if (!fs.existsSync(`${process.cwd()}/router`)) {
@@ -186,16 +237,18 @@ module.exports = (router) => {
       }
 
       if (fs.existsSync(routerPath)) {
-        Http.of(req, res).statusCode(409).sendJsonObject(
-          Http.negative("File already exists. To overwrite it, pass GET parameter force=1", 409)
-        );
+        return json({ req, res }, {
+          statusCode: 409,
+          data: "File already exists. To overwrite it, pass GET parameter force=1"
+        })
       }
 
       fs.writeFileSync(routerPath, content);
 
-      return Http.of(req, res).statusCode(201).sendJsonObject(
-        Http.positive(true, 201)
-      );
+      return json({ req, res }, {
+        statusCode: 201,
+        data: "Router created"
+      })
     },
   );
 };
