@@ -1,8 +1,20 @@
 const moment = require("moment");
+const _ = require("lodash")
+
 const { MongoClient } = require("mongodb");
 const { logger } = require("../src/Logger");
 const { $configuratorKit } = require("./ConfiguratorKit");
 const { $loggerKit } = require("./LoggerKit");
+
+const MIN_DATE = moment(new Date(1999, 1, 1)).toDate()
+const MAX_DATE = moment(new Date(3000, 1, 1)).toDate()
+
+function getTimeRangeByConfig(config) {
+  return {
+    $gt: (config && _.isString(config.startTime)) ? moment(Date.parse(config.startTime)).toDate() : MIN_DATE,
+    $lte: (config && _.isString(config.endTime)) ? moment(Date.parse(config.endTime)).toDate() : MAX_DATE,
+  }
+}
 
 /**
  * Represents a database client specifically for MongoDB.
@@ -81,6 +93,7 @@ class DatabaseProxy extends DatabaseKit {
       .debug(
         `A proxy client for connecting to the database with route data has been created:`,
       );
+
     $loggerKit.getLogger().debug({
       db: DatabaseProxy._pathDb_traffic,
       collectionTraffic: DatabaseProxy._pathDb_trafficRouters,
@@ -112,10 +125,7 @@ class DatabaseProxy extends DatabaseKit {
    */
   async countHttpRequest(
     query,
-    {
-      startTime = moment(new Date(1999, 1, 1)).toISOString(),
-      endTime = moment(new Date(3000, 1, 1)).toISOString(),
-    },
+    config = undefined,
   ) {
     return await this.databaseClient
       .getReadyClient()
@@ -123,10 +133,7 @@ class DatabaseProxy extends DatabaseKit {
       .collection(DatabaseProxy._pathDb_trafficRouters)
       .countDocuments({
         ...query,
-        clickAt: {
-          $gt: moment(Date.parse(startTime)).toDate(),
-          $lte: moment(Date.parse(endTime)).toDate(),
-        },
+        clickAt: getTimeRangeByConfig(config),
       });
   }
 
@@ -142,12 +149,7 @@ class DatabaseProxy extends DatabaseKit {
    */
   async findHttpRequests(
     query,
-    {
-      startTime = moment(new Date(1999, 1, 1)).toISOString(),
-      endTime = moment(new Date(3000, 1, 1)).toISOString(),
-      sort = 1,
-      limit = 512,
-    },
+    config = undefined,
   ) {
     return await this.databaseClient
       .getReadyClient()
@@ -155,13 +157,10 @@ class DatabaseProxy extends DatabaseKit {
       .collection(DatabaseProxy._pathDb_trafficRouters)
       .find({
         ...query,
-        clickAt: {
-          $gt: moment(Date.parse(startTime)).toDate(),
-          $lte: moment(Date.parse(endTime)).toDate(),
-        },
+        clickAt: getTimeRangeByConfig(config),
       })
-      .sort({ _id: sort === 1 ? 1 : -1 })
-      .limit(limit)
+      .sort({ _id: config.sort === 1 ? 1 : -1 })
+      .limit(config.limit)
       .toArray();
   }
 
@@ -175,10 +174,7 @@ class DatabaseProxy extends DatabaseKit {
    */
   async findAndRemoveHttpRequests(
     query,
-    {
-      startTime = moment(new Date(1999, 1, 1)).toISOString(),
-      endTime = moment(new Date(3000, 1, 1)).toISOString(),
-    },
+    config,
   ) {
     return await this.databaseClient
       .getReadyClient()
@@ -186,10 +182,7 @@ class DatabaseProxy extends DatabaseKit {
       .collection(DatabaseProxy._pathDb_trafficRouters)
       .deleteMany({
         ...query,
-        clickAt: {
-          $gt: moment(Date.parse(startTime)).toDate(),
-          $lte: moment(Date.parse(endTime)).toDate(),
-        },
+        clickAt: getTimeRangeByConfig(config),
       });
   }
 }
