@@ -1,4 +1,5 @@
 const _ = require("lodash");
+const moment = require("moment");
 
 const { $databaseKit } = require("../kits/DatabaseKit");
 const { json } = require("../src/NewHttp").response;
@@ -89,13 +90,28 @@ module.exports = (router) => {
         "meta.noindex": { "$eq": true },
       });
 
+      const selectData = await $databaseKit.findHttpRequests({
+        "meta.noindex": { "$ne": true },
+      }, {
+        startAt: moment().add(-15, 'days'),
+        endAt: moment().add(15, 'days'),
+      });
+
+      const groupedRecordsByHost = _
+        .chain(selectData)
+        .groupBy("http.httpHeaders.host")
+        .mapValues(value => _.isArray(value) ? _.size(value) : 0)
+        .toPlainObject()
+
       return json({ req, res }, {
         statusCode: 200,
         data: {
           allDisallowedCount,
           allAllowedCount,
           allHttpRequestsCount,
-          allNotIndexHttpRequestsCount
+          allNotIndexHttpRequestsCount,
+
+          groupedRecordsByHost
         }
       })
     },

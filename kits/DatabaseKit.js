@@ -5,14 +5,15 @@ const { MongoClient } = require("mongodb");
 const { logger } = require("../src/Logger");
 const { $configuratorKit } = require("./ConfiguratorKit");
 const { $loggerKit } = require("./LoggerKit");
+const { isMoment } = require("moment/moment");
 
 const MIN_DATE = moment(new Date(1999, 1, 1)).toDate()
 const MAX_DATE = moment(new Date(3000, 1, 1)).toDate()
 
 function getTimeRangeByConfig(config) {
   return {
-    $gt: (config && _.isString(config.startTime)) ? moment(Date.parse(config.startTime)).toDate() : MIN_DATE,
-    $lte: (config && _.isString(config.endTime)) ? moment(Date.parse(config.endTime)).toDate() : MAX_DATE,
+    $gt: (config && _.isString(config.startTime)) ? moment(isMoment(config.startTime) ? config.startTime : Date.parse(config.startTime)).toDate() : MIN_DATE,
+    $lte: (config && _.isString(config.endTime)) ? moment(isMoment(config.endTime) ? config.endTime : Date.parse(config.endTime)).toDate() : MAX_DATE,
   }
 }
 
@@ -151,6 +152,11 @@ class DatabaseProxy extends DatabaseKit {
     query,
     config = undefined,
   ) {
+    const finalConfig = Object.assign({
+      limit: 512,
+      sort: 1
+    }, config)
+
     return await this.databaseClient
       .getReadyClient()
       .db(DatabaseProxy._pathDb_traffic)
@@ -159,8 +165,8 @@ class DatabaseProxy extends DatabaseKit {
         ...query,
         clickAt: getTimeRangeByConfig(config),
       })
-      .sort({ _id: config.sort === 1 ? 1 : -1 })
-      .limit(config.limit)
+      .sort({ _id: finalConfig.sort === 1 ? 1 : -1 })
+      .limit(finalConfig.limit)
       .toArray();
   }
 
