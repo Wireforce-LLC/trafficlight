@@ -3,7 +3,7 @@ services:
   mongo: # MongoDB service configuration
     image: mongo # Specifies the MongoDB image to use
     restart: always # Container will always restart
-    command: mongod --port 3102 # Command to run MongoDB on port 3102
+    command: mongod --port 3201 # Command to run MongoDB on port 3102
     volumes: # Mounts host directory as container volume
       - ./docker/mongo:/data/db
 
