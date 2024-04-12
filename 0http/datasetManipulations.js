@@ -61,4 +61,40 @@ module.exports = (router) => {
       })
     },
   );
+
+  router.get(
+    "/dataset/statistic",
+
+    // middleware.authByScheme("admins"),
+    async (req, res) => {
+
+      const allAllowedCount = await $databaseKit.countHttpRequest({
+        "meta.noindex": { "$ne": true },
+        _if: true
+      });
+
+      const allDisallowedCount = await $databaseKit.countHttpRequest({
+        "meta.noindex": { "$ne": true },
+        _if: false
+      });
+
+      const allHttpRequestsCount = await $databaseKit.countHttpRequest({
+        "meta.noindex": { "$ne": true },
+      });
+
+      const allNotIndexHttpRequestsCount = await $databaseKit.countHttpRequest({
+        "meta.noindex": { "$eq": true },
+      });
+
+      return json({ req, res }, {
+        statusCode: 200,
+        data: {
+          allDisallowedCount,
+          allAllowedCount,
+          allHttpRequestsCount,
+          allNotIndexHttpRequestsCount
+        }
+      })
+    },
+  );
 };

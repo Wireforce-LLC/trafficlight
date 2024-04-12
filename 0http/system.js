@@ -54,6 +54,13 @@ const schema = {
   }
 };
 
+/**
+ * Validates an object against a given schema.
+ * @param {Object} object The object to validate.
+ * @param {Object} schema The schema to validate against.
+ * @param {string} [path=""] The base path for error reporting.
+ * @returns {Array} An array of error messages, empty if no errors.
+ */
 function validateObject(object, schema, path = "") {
   const errors = [];
 
@@ -91,9 +98,7 @@ module.exports = (router) => {
     async (req, res) => {
       return json({ req, res }, {
         statusCode: 200,
-        data: {
-
-        }
+        data: {}
       })
     },
   );
