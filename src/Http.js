@@ -1,6 +1,6 @@
 const _ = require("lodash");
-const { $configurator } = require("./config");
 const zeroBasic = require("basic-auth-parser");
+const { $configuratorKit } = require("../kits/ConfiguratorKit");
 
 /**
  * Represents HTTP operations and responses.
@@ -164,7 +164,7 @@ class Http {
       }
 
       const credentials = zeroBasic(req.headers.authorization);
-      const isValid = $configurator.checkAuthorizationValidity(
+      const isValid = $configuratorKit.checkAuthorizationValidity(
         schema,
         credentials.username,
         credentials.password,
