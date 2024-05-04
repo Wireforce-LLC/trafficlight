@@ -1,6 +1,6 @@
 const _ = require("lodash");
-const { $configurator } = require("./config");
 const zeroBasic = require("basic-auth-parser");
+const { $configuratorKit } = require("../kits/ConfiguratorKit");
 
 function json({ req, res }, config) {
   return NewHttp.json({ req, res }, config)
@@ -65,30 +65,87 @@ class NewHttp {
     return http;
   }
 
+  /**
+   * Sends a JSON response.
+   * @param {Object} reqAndRes An object containing the request and response objects.
+   * @param {Object} config Configuration object for the JSON response.
+   * @param {number} [config.statusCode] HTTP status code, defaults to 200.
+   * @param {Object} [config.data] The data to send as the JSON response.
+   * @returns {null} Null to signify the end of the operation.
+   */
   static json(
     { req, res },
     config
   ) {
-    let body = undefined
+    let body = undefined;
+
+    /* istanbul ignore if */
+    if (!req) {
+      throw new Error("[NewHttp.json] Request object is null.");
+    }
+
+    /* istanbul ignore if */
+    if (!res) {
+      throw new Error("[NewHttp.json] Response object is null.");
+    }
+
+    /* istanbul ignore if */
+    if (!config) {
+      throw new Error("[NewHttp.json] Config object is null.");
+    }
 
     const http = new NewHttp();
     const configFinal = Object.assign({
       statusCode: 200,
       data: {}
-    }, config)
+    }, config);
 
     http._req = req;
     http._res = res;
 
     if (configFinal.statusCode >= 200 && configFinal.statusCode <= 299) {
-      body = NewHttp.generateSuccessResponse(configFinal.data, configFinal.statusCode)
+      body = NewHttp.generateSuccessResponse(configFinal.data, configFinal.statusCode);
     } else {
-      body = NewHttp.generateErrorResponse(configFinal.data, configFinal.statusCode)
+      body = NewHttp.generateErrorResponse(configFinal.data, configFinal.statusCode);
     }
 
-    http.setStatusCode(configFinal.statusCode || 200)
-    http.sendJsonObject(body)
-    http.endResponse()
+    http.setStatusCode(configFinal.statusCode || 200);
+    http.sendJsonObject(body);
+    return http.endResponse();
+  }
+
+  /**
+   * Sends an HTML response.
+   * @param {Request<Protocol>} req The request object.
+   * @param {Response} res The response object.
+   * @param {string} raw The HTML string to send.
+   * @returns {null} Null to signify the end of the operation.
+   */
+  static html(
+    { req, res },
+    raw
+  ) {
+    const http = new NewHttp();
+
+    if (!req) {
+      throw new Error("[NewHttp.html] Request object is null.");
+    }
+
+    if (!res) {
+      throw new Error("[NewHttp.html] Response object is null.");
+    }
+
+    if (!raw) {
+      throw new Error("[NewHttp.html] HTML string is null.");
+    }
+
+    http._req = req;
+    http._res = res;
+
+    http.setStatusCode(200); // Default status code is 200.
+    http.sendHtmlResponse(raw);
+
+    return http.endResponse();
   }
 
   /**
@@ -194,7 +251,7 @@ class NewHttp {
       }
 
       const credentials = zeroBasic(req.headers.authorization);
-      const isValid = $configurator.checkAuthorizationValidity(
+      const isValid = $configuratorKit.checkAuthorizationValidity(
         schema,
         credentials.username,
         credentials.password,
