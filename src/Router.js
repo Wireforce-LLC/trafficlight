@@ -9,7 +9,7 @@ const YAML = require("yaml");
 const { camelCase } = require("lodash");
 const { Filter, IPDetect } = require("./Filter");
 const { Http } = require("./Http");
-const { configFile, $configurator } = require("./config");
+const { $configuratorKit } = require("../kits/ConfiguratorKit");
 const { logger } = require("./Logger");
 const { alsoMakeFunction } = require("./Also");
 const { $databaseKit } = require("../kits/DatabaseKit");
@@ -22,6 +22,11 @@ class Router {
    */
   static async zeroHttp(req, res) {
     if (typeof _.get(req, "params.route", undefined) !== "string") {
+      return json({ req, res }, {
+        statusCode: 500,
+        data: "The router is not connected correctly. :route parameter is missing"
+      })
+
       return Http.of(req, res)
         .statusCode(500)
         .sendJsonObject(
@@ -70,7 +75,7 @@ class Router {
 
       const parser = new UAParser(req.headers["user-agent"]); // you need to pass the user-agent for nodejs
 
-      if ($configurator.get("monitoring.useMobileTrackingBaseGroup", false)) {
+      if ($configuratorKit.get("monitoring.useMobileTrackingBaseGroup", false)) {
         mobileTrackingBaseGroup = _.pick(httpQuery, [
           "_device",
           "_model",
