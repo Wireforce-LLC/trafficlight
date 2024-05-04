@@ -2,7 +2,7 @@ const _ = require("lodash");
 const { readFileSync } = require("fs");
 const path = require("node:path");
 const mmdb = require("mmdb-lib");
-const { $configurator } = require("./config");
+const { $configuratorKit } = require("../kits/ConfiguratorKit");
 
 // Get a buffer with mmdb database, from file system or whereever.
 const db = readFileSync(path.normalize(`${process.cwd()}/country_asn.mmdb`));
@@ -23,7 +23,7 @@ const TOOLS = {
     const remoteIp =
       req.headers["cf-connecting-ip"] || req.headers["x-real-ip"];
 
-    const allowIfThereInsufficientIP = $configurator.get(
+    const allowIfThereInsufficientIP = $configuratorKit.get(
       "monitoring.allowIfThereInsufficientIP",
       false,
     );
