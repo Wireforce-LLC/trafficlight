@@ -1,9 +1,9 @@
 const _ = require("lodash");
-const { configFile, $configurator } = require("../src/config");
 const { IPDetect } = require("../src/Filter");
 const UAParser = require("ua-parser-js");
 const { $databaseKit } = require("./DatabaseKit");
 const sha1 = require("sha1");
+const { $configuratorKit } = require("./ConfiguratorKit");
 
 class RouterMetricKit {
   dumpHttpRequest({ req }, _if = undefined, meta = undefined) {
@@ -23,7 +23,7 @@ class RouterMetricKit {
       userAgent = parser.getResult();
     }
 
-    if ($configurator.get("monitoring.useMobileTrackingBaseGroup", false)) {
+    if ($configuratorKit.get("monitoring.useMobileTrackingBaseGroup", false)) {
       mobileTrackingBaseGroup = _.pick(httpQuery, [
         "_device",
         "_model",

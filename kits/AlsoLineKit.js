@@ -1,4 +1,3 @@
-const { logger } = require("../src/Logger");
 const axios = require("axios");
 const { $loggerKit } = require("./LoggerKit");
 const _ = require("lodash");

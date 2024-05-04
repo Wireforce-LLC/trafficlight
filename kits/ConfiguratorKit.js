@@ -27,38 +27,50 @@ class ConfiguratorKit {
     try {
       if (fs.existsSync(this.defaultTomlPath)) {
         configDataRaw = fs.readFileSync(this.defaultTomlPath);
-        $loggerKit
-          .getLogger()
-          .info(`Used '${this.defaultTomlPath}' as config file`);
       }
     } catch (e) {
       $loggerKit.getLogger().error(`Could not read '${this.defaultTomlPath}'`);
-      configDataRaw = null;
     }
 
     // Read the user's configuration file.
     try {
-      if (configDataRaw === null && fs.existsSync(this.userTomlPath)) {
-        configDataRaw = fs.readFileSync(this.userTomlPath);
-        $loggerKit
-          .getLogger()
-          .info(`Used '${this.userTomlPath}' as config file`);
+      if (configDataRaw === undefined) {
+        if (fs.existsSync(this.userTomlPath)) {
+          configDataRaw = fs.readFileSync(this.userTomlPath);
+        }
       }
     } catch (e) {
       $loggerKit.getLogger().error(`Could not read '${this.userTomlPath}'`);
-      configDataRaw = null;
     }
 
     // Parse the TOML configuration file content into a JavaScript object.
     try {
-      this.configData = parse(configDataRaw);
+      if (configDataRaw !== undefined) {
+        this.configData = parse(configDataRaw);
+      }
     } catch (e) {
       $loggerKit.getLogger().error("Could not parse configuration file");
-      this.configData = null;
     }
   }
 
 
+
+  /**
+   * Get a configuration value.
+   *
+   * Get a configuration value using the given path. If the value is not found,
+   * it returns the given default value or null.
+   *
+   * @param {string} path - The path to the configuration value.
+   * @param {*} [$default=null] - The default value to return if the path is
+   *   not found.
+   * @returns {*} The configuration value found in the given path, or the
+   *   default value if not found.
+   * @throws {Error} If the configuration data is not loaded. Check that the
+   *   ConfiguratorKit constructor has been called.
+   * @throws {Error} If the path is null or undefined. get called with invalid
+   *   path "{path}".
+   */
   get(path, $default = null) {
     if (!this.configData) {
       throw new Error(
@@ -82,7 +94,6 @@ class ConfiguratorKit {
     }
   }
 
-
   /**
    * Get the database path for the given path.
    *
@@ -91,15 +102,15 @@ class ConfiguratorKit {
    */
   getDbPath(path) {
     // Log the path being queried.
-    console.log("[ConfiguratorKit] getDbPath called with path:", path);
+    $loggerKit.getLogger().debug("[ConfiguratorKit] getDbPath called with path:", path);
     // Get the database paths from the configuration.
     const dbPaths = this.get("databases.mongodb.paths");
     // Log the database paths.
-    console.log("[ConfiguratorKit] dbPaths:", dbPaths);
+    $loggerKit.getLogger().debug("[ConfiguratorKit] dbPaths:", dbPaths);
     // Find the database path that matches the given path.
     const dbPath = _.find(dbPaths, (i) => i[0] === path);
     // Log the found database path.
-    console.log("[ConfiguratorKit] dbPath:", dbPath);
+    $loggerKit.getLogger().debug("[ConfiguratorKit] dbPath:", dbPath);
     // Return the database path if found, or null otherwise.
     return dbPath ? dbPath[1] : null;
   }
@@ -121,7 +132,7 @@ class ConfiguratorKit {
      * Log the authentication data used for checking authorization.
      * @type {object}
      */
-    console.log("[ConfiguratorKit] checkAuthorizationValidity called with", {
+    $loggerKit.getLogger().debug("[ConfiguratorKit] checkAuthorizationValidity called with", {
       scheme,
       login,
       password,
@@ -145,13 +156,13 @@ class ConfiguratorKit {
        * Log the current user being checked.
        * @type {Array}
        */
-      console.log("[ConfiguratorKit] Checking user", user);
+      $loggerKit.getLogger().debug("[ConfiguratorKit] Checking user", user);
       if (user[0] === login && user[1] === password) {
         /**
          * If the login and password match, return true.
          * @type {boolean}
          */
-        console.log("[ConfiguratorKit] User authorized");
+        $loggerKit.getLogger().debug("[ConfiguratorKit] User authorized");
         return true;
       }
     }
@@ -160,7 +171,7 @@ class ConfiguratorKit {
      * If no user was found, return false.
      * @type {boolean}
      */
-    console.log("[ConfiguratorKit] User not authorized");
+    $loggerKit.getLogger().debugconsole.log("[ConfiguratorKit] User not authorized");
     return false;
   }
 }
