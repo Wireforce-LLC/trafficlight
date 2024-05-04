@@ -1,9 +1,8 @@
-const { Router } = require("./src/Router");
-const { $configurator } = require("./src/config");
 const { json, urlencoded } = require("express");
 
 const routerDatasetManipulation = require("./0http/datasetManipulations");
 const routerSystem = require("./0http/system");
+const routerDynamic = require("./0http/router");
 
 const { $serviceKit } = require("./kits/ServiceKit");
 const { $databaseKit } = require("./kits/DatabaseKit");
@@ -15,13 +14,6 @@ const zero = require("0http");
 const sequential = require("0http/lib/router/sequential");
 
 const { $configuratorKit } = require("./kits/ConfiguratorKit");
-const { $milkyWayKit } = require("./kits/MilkyWayKit");
-const { Http } = require("./src/Http");
-const { $routerMetricKit } = require("./kits/RouterMetricKit");
-const { alsoMakeFunction } = require("./src/Also");
-const { Filter } = require("./src/Filter");
-const { $alsoLineKit } = require("./kits/AlsoLineKit");
-const { camelCase } = require("lodash");
 
 let router;
 let server;
@@ -46,96 +38,38 @@ if ($configuratorKit.get("http.engine") === "0http") {
   server = createServer();
 }
 
-const host = $configurator.get("http.host", "0.0.0.0");
-const port = $configurator.get("http.port", "3000");
-const protocol = $configurator.get("http.protocol", "tcp");
+const host = $configuratorKit.get("http.host", "0.0.0.0");
+const port = $configuratorKit.get("http.port", 3000);
+const protocol = $configuratorKit.get("http.protocol", "tcp");
 
 router.use(urlencoded());
 router.use(json());
+router.use(function(req, res, next) {
+  req.url = req.url.replace(/\/+/g, "/")
+  req.path = req.path.replace(/\/+/g, "/")
+  req.originalUrl = req.originalUrl.replace(/\/+/g, "/")
+
+  return next();
+});
+
 router.use((req, _, next) => {
   $loggerKit.getLogger().debug(`${req.method} ${req.url}`)
-  next()
+  return next()
 });
 
 routerDatasetManipulation(router);
 routerSystem(router);
+routerDynamic(router);
+
+// router.use("/", function (req, res) {
+//   return json({ req, res }, {
+//     statusCode: 404,
+//     data: "Not found"
+//   })
+// });
 
 
-const mainRouterDynamic = (req, res) => {
-  const route = _.get(req, "params.route", undefined)?.toLowerCase();
-
-  if (!_.isString(route)) {
-    return Http.of(req, res)
-      .statusCode(500)
-      .sendJsonObject(
-        Http.negative(
-          "The router is not connected correctly. :route parameter is missing",
-        ),
-      );
-  }
-
-  $milkyWayKit.resolveRouter(route, { req, res }).then((resolved) => {
-    if (resolved) {
-      const routerType = String(resolved.out.type).toUpperCase();
-      const alsoDoIt = _.get(resolved.out, "also", []);
-
-      if ($configuratorKit.get("monitoring.registerTraffic", false)) {
-        $routerMetricKit.dumpHttpRequest({ req }, resolved.if, resolved.meta);
-      }
-
-      if (!_.isEmpty(alsoDoIt)) {
-        alsoDoIt.map((also) => {
-          const name = _.get(also, "name", undefined);
-          const props = Filter.maskObject(_.get(also, "props", {}), {
-            ..._.mapKeys(req.query, (_, i) => "$get." + camelCase(i)),
-            ..._.mapKeys(req.body, (_, i) => "$body." + camelCase(i)),
-            ..._.mapKeys(req, (_, i) => "$req." + camelCase(i)),
-          });
-
-          if (!_.isEmpty(name)) {
-            $alsoLineKit.execute(name, props);
-          }
-        });
-      }
-
-      if (_.isEmpty(resolved.out)) {
-        return Http.of(req, res).statusCode(200).end();
-      }
-
-      if (routerType === "JSON") {
-        $milkyWayKit.processingHttpJson(resolved.out, { req, res });
-      } else if (routerType === "HTML") {
-        $milkyWayKit.processingHttpHtml(resolved.out, { req, res });
-      } else if (routerType === "REDIRECT") {
-        $milkyWayKit.processingHttpRedirect(resolved.out, { req, res });
-      } else if (routerType === "PROXYPASS") {
-        $milkyWayKit.processingHttpProxypass(resolved.out, { req, res });
-      }
-    } else {
-      return Http.of(req, res)
-        .statusCode(500)
-        .sendJsonObject(
-          Http.negative("The router is not connected correctly."),
-        );
-    }
-  });
-};
-
-/**
- * Handles dynamic routing based on the route parameter.
- * @param {Object} req - The request object.
- * @param {Object} res - The response object.
- */
-router.get("/router/:route", mainRouterDynamic);
-
-/**
- * Handles dynamic routing based on the router and route parameters.
- * @param {Object} req - The request object.
- * @param {Object} res - The response object.
- */
-router.get("/:router/:route", mainRouterDynamic);
-
-if ($configurator.get("http.loggerEnabled")) {
+if ($configuratorKit.get("http.loggerEnabled")) {
   /**
    * Logs each HTTP request if logging is enabled in the configuration.
    * @param {Object} req - The HTTP request object.
