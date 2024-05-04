@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "0http": "^3.5.2",
+    "@esm2cjs/normalize-url": "^8.0.0",
     "axios": "^1.6.7",
     "basic-auth-parser": "^0.0.2-1",
     "body-parser": "^1.20.2",
@@ -24,6 +25,7 @@
     "moment": "^2.30.1",
     "mongodb": "^6.3.0",
     "node-mime-types": "^1.1.2",
+    "normalize-url": "npm:@esm2cjs/normalize-url",
     "pino": "^8.19.0",
     "pino-pretty": "^10.3.1",
     "sha1": "^1.1.1",
