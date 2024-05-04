@@ -7,7 +7,6 @@ const middleware = require("../src/NewHttp").middleware;
 
 const { Router } = require("../src/Router");
 
-
 const schema = {
   meta: {
     required: false,
